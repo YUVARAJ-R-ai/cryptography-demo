@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #060a10;
+    --bg2: #0b1120;
+    --bg3: #111827;
+    --border: #1e3a5f;
+    --accent: #00e5ff;
+    --accent2: #7c3aed;
+    --accent3: #10b981;
+    --warn: #f59e0b;
+    --red: #ef4444;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --mono: 'Share Tech Mono', monospace;
+    --display: 'Orbitron', sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .scanline {
+    pointer-events: none;
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.07) 2px,
+      rgba(0,0,0,0.07) 4px
+    );
+    z-index: 9999;
+  }
+
+  header {
+    padding: 20px 32px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: linear-gradient(90deg, rgba(0,229,255,0.05), transparent);
+  }
+
+  .logo {
+    font-family: var(--display);
+    font-size: 1.3rem;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: var(--accent);
+    text-shadow: 0 0 20px rgba(0,229,255,0.5);
+  }
+
+  .logo span { color: var(--muted); font-weight: 400; }
+  
+  .header-badge {
+    margin-left: auto;
+    font-size: 0.65rem;
+    padding: 4px 10px;
+    border: 1px solid var(--accent3);
+    color: var(--accent3);
+    letter-spacing: 2px;
+    border-radius: 2px;
+  }
+
+  .tabs {
+    display: flex;
+    padding: 20px 32px 0;
+    gap: 4px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tab {
+    padding: 10px 24px;
+    background: none;
+    border: 1px solid transparent;
+    border-bottom: none;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    cursor: pointer;
+    position: relative;
+    top: 1px;
+    transition: all 0.2s;
+  }
+
+  .tab:hover { color: var(--text); border-color: var(--border); }
+
+  .tab.active {
+    color: var(--accent);
+    border-color: var(--border);
+    border-bottom-color: var(--bg);
+    background: var(--bg);
+  }
+
+  .tab-num {
+    font-size: 0.6rem;
+    color: var(--muted);
+    margin-right: 6px;
+  }
+
+  .tab.active .tab-num { color: var(--accent2); }
+
+  main { padding: 32px; max-width: 1000px; margin: 0 auto; }
+
+  .panel { display: none; animation: fadeIn 0.3s ease; }
+  .panel.active { display: block; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .section-title {
+    font-family: var(--display);
+    font-size: 0.75rem;
+    letter-spacing: 4px;
+    color: var(--accent);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+
+  .section-desc {
+    color: var(--muted);
+    font-size: 0.78rem;
+    line-height: 1.7;
+    margin-bottom: 24px;
+    max-width: 640px;
+  }
+
+  .section-desc strong { color: var(--warn); }
+
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+
+  .card-label {
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    color: var(--muted);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  textarea, input[type="text"], input[type="number"], select {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    padding: 10px 12px;
+    outline: none;
+    transition: border-color 0.2s;
+    resize: none;
+  }
+
+  textarea:focus, input:focus, select:focus { border-color: var(--accent); }
+
+  textarea { height: 90px; }
+
+  .output-box {
+    background: var(--bg3);
+    border: 1px solid var(--accent2);
+    border-radius: 2px;
+    padding: 12px;
+    font-size: 0.85rem;
+    color: var(--accent);
+    min-height: 90px;
+    word-break: break-all;
+    line-height: 1.6;
+    letter-spacing: 0.5px;
+  }
+
+  .output-box.green { color: var(--accent3); border-color: var(--accent3); }
+  .output-box.yellow { color: var(--warn); border-color: var(--warn); }
+
+  button {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--bg);
+    font-weight: bold;
+  }
+  .btn-primary:hover { box-shadow: 0 0 20px rgba(0,229,255,0.4); transform: translateY(-1px); }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--accent2);
+    border: 1px solid var(--accent2);
+  }
+  .btn-secondary:hover { background: rgba(124,58,237,0.1); }
+
+  .btn-green {
+    background: var(--accent3);
+    color: var(--bg);
+    font-weight: bold;
+  }
+  .btn-green:hover { box-shadow: 0 0 20px rgba(16,185,129,0.4); }
+
+  .btn-row { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+
+  .shift-vis {
+    display: flex;
+    gap: 2px;
+    flex-wrap: wrap;
+    margin: 12px 0;
+  }
+
+  .shift-char {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    transition: all 0.3s;
+    position: relative;
+  }
+
+  .shift-char.highlighted {
+    background: rgba(0,229,255,0.15);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .shift-char.shifted {
+    background: rgba(124,58,237,0.2);
+    border-color: var(--accent2);
+    color: #c084fc;
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+    padding: 0;
+    margin: 8px 0;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 8px rgba(0,229,255,0.6);
+  }
+
+  .rsa-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin: 16px 0;
+  }
+
+  .rsa-cell {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px 12px;
+    text-align: center;
+  }
+
+  .rsa-cell .var { font-size: 1.1rem; color: var(--accent2); font-family: var(--display); }
+  .rsa-cell .val { font-size: 1.4rem; color: var(--accent); margin: 4px 0; }
+  .rsa-cell .desc { font-size: 0.6rem; color: var(--muted); letter-spacing: 1px; }
+
+  .formula {
+    font-size: 0.8rem;
+    color: var(--muted);
+    background: var(--bg3);
+    border-left: 2px solid var(--accent2);
+    padding: 8px 14px;
+    margin: 8px 0;
+    letter-spacing: 0.5px;
+  }
+
+  .formula span { color: var(--warn); }
+
+  .hash-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+    align-items: start;
+    margin-bottom: 16px;
+  }
+
+  .hash-output {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    letter-spacing: 1.5px;
+    word-break: break-all;
+    line-height: 2;
+    color: var(--accent3);
+  }
+
+  .hash-char {
+    display: inline-block;
+    transition: color 0.2s, background 0.2s;
+    padding: 1px 0;
+    border-radius: 1px;
+  }
+
+  .hash-char.changed {
+    color: var(--red);
+    background: rgba(239,68,68,0.15);
+  }
+
+  .avalanche-bar {
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    margin: 10px 0 4px;
+    overflow: hidden;
+  }
+
+  .avalanche-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent3), var(--warn), var(--red));
+    border-radius: 3px;
+    transition: width 0.4s ease;
+  }
+
+  .avalanche-label {
+    font-size: 0.7rem;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .avalanche-label span { color: var(--warn); }
+
+  .step-list { margin: 12px 0; }
+  .step { 
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(30,58,95,0.5);
+    font-size: 0.8rem;
+  }
+  .step:last-child { border-bottom: none; }
+  .step-num { 
+    width: 22px; height: 22px; 
+    background: var(--accent2); 
+    color: white;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.65rem;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .step-text { color: var(--text); line-height: 1.5; }
+  .step-text .highlight { color: var(--accent); }
+  .step-text .val { color: var(--warn); font-size: 0.9rem; }
+
+  .badge {
+    display: inline-block;
+    font-size: 0.6rem;
+    padding: 2px 8px;
+    border-radius: 2px;
+    letter-spacing: 1px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .badge-blue { background: rgba(0,229,255,0.1); color: var(--accent); border: 1px solid var(--accent); }
+  .badge-green { background: rgba(16,185,129,0.1); color: var(--accent3); border: 1px solid var(--accent3); }
+  .badge-warn { background: rgba(245,158,11,0.1); color: var(--warn); border: 1px solid var(--warn); }
+
+  .error-text { color: var(--red); font-size: 0.75rem; margin-top: 6px; }
+
+  select option { background: var(--bg3); }
+
+  .compare-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+  .compare-label { font-size: 0.65rem; letter-spacing: 2px; color: var(--muted); margin-bottom: 6px; }
+
+  @media (max-width: 640px) {
+    .two-col, .rsa-grid { grid-template-columns: 1fr; }
+    .compare-row { grid-template-columns: 1fr; }
+    .rsa-grid { grid-template-columns: 1fr 1fr; }
+    main { padding: 16px; }
+    .tabs { padding: 16px 16px 0; }
+    header { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="scanline"></div>
+
+<header>
+  <div class="logo">CRYPTO<span>LAB</span></div>
+  <div style="font-size:0.65rem; color:var(--muted); letter-spacing:2px;">// THEORETICAL ASPECTS OF CRYPTOGRAPHY</div>
+  <div class="header-badge">DEMO v1.0</div>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab(0)"><span class="tab-num">01</span>CAESAR CIPHER</button>
+  <button class="tab" onclick="switchTab(1)"><span class="tab-num">02</span>RSA ENGINE</button>
+  <button class="tab" onclick="switchTab(2)"><span class="tab-num">03</span>HASH VISUALIZER</button>
+</div>
+
+<main>
+
+<!-- PANEL 1: CAESAR -->
+<div class="panel active" id="panel-0">
+  <div class="section-title">// Classical Encryption</div>
+  <div class="section-desc">
+    The <strong>Caesar cipher</strong> shifts every letter by a fixed amount — the key. Julius Caesar used a shift of 3. 
+    It's trivially breakable (only 25 possible keys), but contains the <strong>core idea</strong> of all modern encryption: <strong>transform plaintext into ciphertext using a key.</strong>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-label">// Plaintext Input</div>
+      <textarea id="caesar-input" placeholder="Type your message here..." oninput="updateCaesar()">HELLO WORLD</textarea>
+      <div style="margin-top:12px;">
+        <div class="card-label">// Shift Key: <span id="shift-display" style="color:var(--accent)">3</span></div>
+        <input type="range" id="caesar-shift" min="1" max="25" value="3" oninput="updateCaesar()">
+        <div style="display:flex; justify-content:space-between; font-size:0.65rem; color:var(--muted)"><span>1</span><span>13</span><span>25</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-label">// Ciphertext Output</div>
+      <div class="output-box" id="caesar-output" style="height:90px;"></div>
+      <div style="margin-top:12px;">
+        <div class="card-label">// Decrypted Back</div>
+        <div class="output-box green" id="caesar-decrypt" style="min-height:40px;font-size:0.8rem;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">// Alphabet Shift Visualization — <span style="color:var(--accent)">Original</span> → <span style="color:#c084fc">Shifted</span></div>
+    <div class="shift-vis" id="shift-original"></div>
+    <div style="margin-top:8px;">
+    <div class="shift-vis" id="shift-shifted"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">// Vigenère Cipher (Poly-alphabetic Extension)</div>
+    <div class="section-desc" style="margin-bottom:16px;">Uses a <strong>keyword</strong> — each letter of the key shifts the corresponding plaintext letter differently. Exponentially harder to crack.</div>
+    <div class="two-col">
+      <div>
+        <div class="card-label">// Plaintext</div>
+        <input type="text" id="vig-input" value="CRYPTOGRAPHY" oninput="updateVigenere()">
+      </div>
+      <div>
+        <div class="card-label">// Keyword</div>
+        <input type="text" id="vig-key" value="KEY" oninput="updateVigenere()" style="text-transform:uppercase">
+      </div>
+    </div>
+    <div style="margin-top:12px; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+      <div>
+        <div class="card-label" style="margin-top:8px;">// Encrypted</div>
+        <div class="output-box" id="vig-output" style="min-height:44px;"></div>
+      </div>
+      <div>
+        <div class="card-label" style="margin-top:8px;">// Decrypted</div>
+        <div class="output-box green" id="vig-decrypt" style="min-height:44px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL 2: RSA -->
+<div class="panel" id="panel-1">
+  <div class="section-title">// RSA Public Key Cryptography</div>
+  <div class="section-desc">
+    RSA works because <strong>multiplying two primes is easy</strong>, but <strong>factoring their product is hard</strong>. 
+    Pick two primes → compute the public key (e, n) → anyone can encrypt → only you can decrypt with private key d.
+  </div>
+
+  <div class="card">
+    <div class="card-label">// Step 1: Choose Two Prime Numbers</div>
+    <div class="two-col">
+      <div>
+        <div class="card-label">// Prime p</div>
+        <select id="prime-p" onchange="updateRSA()">
+          <option value="11">11</option><option value="13">13</option><option value="17">17</option>
+          <option value="19">19</option><option value="23">23</option><option value="29">29</option>
+          <option value="31">31</option><option value="37">37</option><option value="41">41</option>
+          <option value="43">43</option><option value="47">47</option><option value="53" selected>53</option>
+        </select>
+      </div>
+      <div>
+        <div class="card-label">// Prime q</div>
+        <select id="prime-q" onchange="updateRSA()">
+          <option value="11">11</option><option value="13">13</option><option value="17">17</option>
+          <option value="19">19</option><option value="23">23</option><option value="29">29</option>
+          <option value="31">31</option><option value="37">37</option><option value="41">41</option>
+          <option value="43">43</option><option value="47" selected>47</option><option value="53">53</option>
+        </select>
+      </div>
+    </div>
+    <div id="prime-error" class="error-text"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">// Step 2: Computed Key Components</div>
+    <div class="rsa-grid" id="rsa-grid"></div>
+    <div id="rsa-steps" class="step-list"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">// Step 3: Encrypt & Decrypt a Number</div>
+    <div class="section-desc" style="margin-bottom:12px;">Enter a number <strong>m</strong> where <span style="color:var(--accent)">1 &lt; m &lt; n</span>. RSA computes: <strong style="color:var(--warn)">ciphertext = m<sup>e</sup> mod n</strong> → <strong style="color:var(--accent3)">decrypted = c<sup>d</sup> mod n</strong></div>
+    <div style="display:grid; grid-template-columns:auto 1fr; gap:12px; align-items:center; margin-bottom:12px;">
+      <div class="card-label" style="margin:0;">// Message m =</div>
+      <input type="number" id="rsa-msg" value="42" oninput="updateRSAEncrypt()" style="max-width:200px;">
+    </div>
+    <div id="rsa-msg-error" class="error-text" style="margin-bottom:8px;"></div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+      <div>
+        <div class="card-label">// Encrypted <span class="badge badge-blue">PUBLIC KEY (e, n)</span></div>
+        <div class="output-box" id="rsa-encrypted" style="min-height:60px; font-size:1.4rem; display:flex; align-items:center;"></div>
+        <div class="formula" id="rsa-enc-formula"></div>
+      </div>
+      <div>
+        <div class="card-label">// Decrypted <span class="badge badge-green">PRIVATE KEY (d, n)</span></div>
+        <div class="output-box green" id="rsa-decrypted" style="min-height:60px; font-size:1.4rem; display:flex; align-items:center;"></div>
+        <div class="formula" id="rsa-dec-formula"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL 3: HASH -->
+<div class="panel" id="panel-2">
+  <div class="section-title">// SHA-256 Hash Visualizer</div>
+  <div class="section-desc">
+    Hash functions are <strong>one-way</strong> — given the hash, you cannot recover the input. 
+    The <strong>avalanche effect</strong>: changing even one character <strong>completely transforms the entire hash</strong>. 
+    This is why your passwords are stored as hashes, not plaintext.
+  </div>
+
+  <div class="card">
+    <div class="card-label">// Input Text — Watch The Hash React In Real Time</div>
+    <textarea id="hash-input" placeholder="Type anything and watch the hash below change..." oninput="updateHash()" style="height:70px;">The quick brown fox</textarea>
+  </div>
+
+  <div class="card">
+    <div class="card-label">// SHA-256 Hash Output <span class="badge badge-blue">256 BITS = 64 HEX CHARS</span></div>
+    <div class="hash-output" id="hash-output"></div>
+    <div class="avalanche-bar"><div class="avalanche-fill" id="avalanche-fill" style="width:0%"></div></div>
+    <div class="avalanche-label"><span>Avalanche Effect</span><span id="avalanche-pct">—</span></div>
+  </div>
+
+  <div class="compare-row">
+    <div class="card">
+      <div class="card-label">// Input A</div>
+      <input type="text" id="hash-a" value="password" oninput="updateCompare()">
+      <div class="card-label" style="margin-top:10px;">// Hash A</div>
+      <div style="font-size:0.7rem; color:var(--accent3); word-break:break-all; line-height:1.8; margin-top:4px;" id="hash-a-out"></div>
+    </div>
+    <div class="card">
+      <div class="card-label">// Input B (change one char)</div>
+      <input type="text" id="hash-b" value="Password" oninput="updateCompare()">
+      <div class="card-label" style="margin-top:10px;">// Hash B</div>
+      <div style="font-size:0.7rem; word-break:break-all; line-height:1.8; margin-top:4px;" id="hash-b-out"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">// Bit Difference Analysis</div>
+    <div style="font-size:0.75rem; color:var(--muted); margin-bottom:10px;">Red characters differ between Hash A and Hash B</div>
+    <div id="diff-display" style="font-size:0.72rem; word-break:break-all; line-height:2; letter-spacing:1px;"></div>
+    <div id="diff-stats" style="margin-top:10px; font-size:0.75rem; color:var(--muted);"></div>
+  </div>
+</div>
+
+</main>
+
+<script>
+// ---- TAB SWITCHING ----
+function switchTab(idx) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i===idx));
+  document.querySelectorAll('.panel').forEach((p,i) => p.classList.toggle('active', i===idx));
+}
+
+// ---- CAESAR CIPHER ----
+function caesarEncrypt(text, shift) {
+  return text.toUpperCase().split('').map(c => {
+    if (c >= 'A' && c <= 'Z') {
+      return String.fromCharCode((c.charCodeAt(0) - 65 + shift) % 26 + 65);
+    }
+    return c;
+  }).join('');
+}
+
+function caesarDecrypt(text, shift) {
+  return caesarEncrypt(text, 26 - shift);
+}
+
+function updateCaesar() {
+  const text = document.getElementById('caesar-input').value;
+  const shift = parseInt(document.getElementById('caesar-shift').value);
+  document.getElementById('shift-display').textContent = shift;
+
+  const enc = caesarEncrypt(text, shift);
+  document.getElementById('caesar-output').textContent = enc;
+  document.getElementById('caesar-decrypt').textContent = caesarDecrypt(enc, shift);
+
+  // Alphabet visualisation
+  const alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  const shifted = alpha.map(c => String.fromCharCode((c.charCodeAt(0) - 65 + shift) % 26 + 65));
+
+  const usedChars = new Set(text.toUpperCase().replace(/[^A-Z]/g, '').split(''));
+  
+  ['shift-original', 'shift-shifted'].forEach((id, si) => {
+    const arr = si === 0 ? alpha : shifted;
+    const origArr = alpha;
+    document.getElementById(id).innerHTML = arr.map((c, i) => {
+      const isUsed = usedChars.has(origArr[i]);
+      return `<div class="shift-char ${isUsed ? (si===0?'highlighted':'shifted') : ''}">${c}</div>`;
+    }).join('');
+  });
+}
+
+// ---- VIGENÈRE ----
+function vigenereEncrypt(text, key) {
+  if (!key) return '';
+  const t = text.toUpperCase().replace(/[^A-Z]/g, '');
+  const k = key.toUpperCase().replace(/[^A-Z]/g, '');
+  if (!k.length) return '';
+  return t.split('').map((c, i) => {
+    const shift = k[i % k.length].charCodeAt(0) - 65;
+    return String.fromCharCode((c.charCodeAt(0) - 65 + shift) % 26 + 65);
+  }).join('');
+}
+
+function vigenereDecrypt(text, key) {
+  if (!key) return '';
+  const t = text.toUpperCase().replace(/[^A-Z]/g, '');
+  const k = key.toUpperCase().replace(/[^A-Z]/g, '');
+  if (!k.length) return '';
+  return t.split('').map((c, i) => {
+    const shift = k[i % k.length].charCodeAt(0) - 65;
+    return String.fromCharCode((c.charCodeAt(0) - 65 + (26 - shift)) % 26 + 65);
+  }).join('');
+}
+
+function updateVigenere() {
+  const text = document.getElementById('vig-input').value;
+  const key = document.getElementById('vig-key').value;
+  const enc = vigenereEncrypt(text, key);
+  document.getElementById('vig-output').textContent = enc;
+  document.getElementById('vig-decrypt').textContent = vigenereDecrypt(enc, key);
+}
+
+// ---- RSA ----
+function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+
+function extGcd(a, b) {
+  if (b === 0) return [a, 1, 0];
+  const [g, x, y] = extGcd(b, a % b);
+  return [g, y, x - Math.floor(a / b) * y];
+}
+
+function modInverse(e, phi) {
+  const [g, x] = extGcd(e, phi);
+  if (g !== 1) return null;
+  return ((x % phi) + phi) % phi;
+}
+
+function modPow(base, exp, mod) {
+  let result = 1n;
+  let b = BigInt(base), e = BigInt(exp), m = BigInt(mod);
+  b = b % m;
+  while (e > 0n) {
+    if (e % 2n === 1n) result = (result * b) % m;
+    e = e / 2n;
+    b = (b * b) % m;
+  }
+  return Number(result);
+}
+
+let rsaParams = {};
+
+function updateRSA() {
+  const p = parseInt(document.getElementById('prime-p').value);
+  const q = parseInt(document.getElementById('prime-q').value);
+  const errEl = document.getElementById('prime-error');
+
+  if (p === q) {
+    errEl.textContent = '⚠ p and q must be different primes!';
+    return;
+  }
+  errEl.textContent = '';
+
+  const n = p * q;
+  const phi = (p - 1) * (q - 1);
+
+  // Find e: common choice is 65537 but for small n use smaller
+  let e = 65537;
+  if (e >= phi) e = 17;
+  while (gcd(e, phi) !== 1 || e >= phi) { e += 2; }
+
+  const d = modInverse(e, phi);
+  rsaParams = { p, q, n, phi, e, d };
+
+  document.getElementById('rsa-grid').innerHTML = `
+    <div class="rsa-cell"><div class="var">p</div><div class="val">${p}</div><div class="desc">Prime 1</div></div>
+    <div class="rsa-cell"><div class="var">q</div><div class="val">${q}</div><div class="desc">Prime 2</div></div>
+    <div class="rsa-cell"><div class="var">n</div><div class="val">${n}</div><div class="desc">p × q (Modulus)</div></div>
+    <div class="rsa-cell"><div class="var">φ(n)</div><div class="val">${phi}</div><div class="desc">(p−1)(q−1)</div></div>
+    <div class="rsa-cell" style="border-color:rgba(0,229,255,0.4)"><div class="var" style="color:var(--accent)">e</div><div class="val">${e}</div><div class="desc">Public Exponent</div></div>
+    <div class="rsa-cell" style="border-color:rgba(16,185,129,0.4)"><div class="var" style="color:var(--accent3)">d</div><div class="val">${d}</div><div class="desc">Private Key</div></div>
+    <div class="rsa-cell" style="grid-column:span 2; border-color:rgba(0,229,255,0.3)"><div class="var" style="color:var(--accent); font-size:0.8rem;">PUBLIC KEY</div><div class="val" style="font-size:1rem;">(e=${e}, n=${n})</div><div class="desc">Share with everyone</div></div>
+    <div class="rsa-cell" style="grid-column:span 2; border-color:rgba(16,185,129,0.3)"><div class="var" style="color:var(--accent3); font-size:0.8rem;">PRIVATE KEY</div><div class="val" style="font-size:1rem;">(d=${d}, n=${n})</div><div class="desc">Keep secret — never share</div></div>
+  `;
+
+  document.getElementById('rsa-steps').innerHTML = `
+    <div class="step"><div class="step-num">1</div><div class="step-text">Choose primes: <span class="highlight">p = ${p}</span>, <span class="highlight">q = ${q}</span></div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-text">Compute modulus: <span class="highlight">n = p × q = ${p} × ${q} =</span> <span class="val">${n}</span></div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-text">Euler's totient: <span class="highlight">φ(n) = (p−1)(q−1) = ${p-1} × ${q-1} =</span> <span class="val">${phi}</span></div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-text">Choose e = <span class="val">${e}</span> such that <span class="highlight">gcd(${e}, ${phi}) = ${gcd(e,phi)} = 1</span> (coprime to φ)</div></div>
+    <div class="step"><div class="step-num">5</div><div class="step-text">Compute d = <span class="val">${d}</span> such that <span class="highlight">e × d ≡ 1 (mod φ) → ${e} × ${d} mod ${phi} = ${(e*d)%phi}</span></div></div>
+  `;
+
+  updateRSAEncrypt();
+}
+
+function updateRSAEncrypt() {
+  if (!rsaParams.n) return;
+  const { e, d, n } = rsaParams;
+  const m = parseInt(document.getElementById('rsa-msg').value);
+  const errEl = document.getElementById('rsa-msg-error');
+
+  if (isNaN(m) || m <= 1 || m >= n) {
+    errEl.textContent = `⚠ Message must be between 2 and ${n - 1}`;
+    document.getElementById('rsa-encrypted').textContent = '—';
+    document.getElementById('rsa-decrypted').textContent = '—';
+    return;
+  }
+  errEl.textContent = '';
+
+  const c = modPow(m, e, n);
+  const dec = modPow(c, d, n);
+
+  document.getElementById('rsa-encrypted').textContent = c;
+  document.getElementById('rsa-decrypted').textContent = dec;
+  document.getElementById('rsa-enc-formula').innerHTML = `Encrypt: <span>${m}<sup>${e}</sup> mod ${n} = ${c}</span>`;
+  document.getElementById('rsa-dec-formula').innerHTML = `Decrypt: <span>${c}<sup>${d}</sup> mod ${n} = ${dec}</span>`;
+}
+
+// ---- SHA-256 ----
+let prevHash = '';
+
+async function sha256(msg) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+async function updateHash() {
+  const text = document.getElementById('hash-input').value;
+  const hash = await sha256(text);
+
+  const outEl = document.getElementById('hash-output');
+  if (!prevHash) {
+    outEl.innerHTML = hash.split('').map(c => `<span class="hash-char">${c}</span>`).join('');
+  } else {
+    outEl.innerHTML = hash.split('').map((c, i) => {
+      const changed = c !== prevHash[i];
+      return `<span class="hash-char ${changed ? 'changed' : ''}">${c}</span>`;
+    }).join('');
+  }
+
+  // Avalanche
+  if (prevHash) {
+    let diff = 0;
+    for (let i = 0; i < 64; i++) if (hash[i] !== prevHash[i]) diff++;
+    const pct = Math.round((diff / 64) * 100);
+    document.getElementById('avalanche-fill').style.width = pct + '%';
+    document.getElementById('avalanche-pct').textContent = `${diff}/64 chars changed (${pct}%)`;
+  }
+
+  prevHash = hash;
+}
+
+async function updateCompare() {
+  const a = document.getElementById('hash-a').value;
+  const b = document.getElementById('hash-b').value;
+  const ha = await sha256(a);
+  const hb = await sha256(b);
+
+  document.getElementById('hash-a-out').textContent = ha;
+
+  // Color hash-b chars that differ from hash-a
+  const bEl = document.getElementById('hash-b-out');
+  bEl.innerHTML = hb.split('').map((c, i) => {
+    const diff = c !== ha[i];
+    return `<span style="color:${diff?'var(--red)':'var(--accent3)'}">${c}</span>`;
+  }).join('');
+
+  // Diff display
+  let diffCount = 0;
+  const diffEl = document.getElementById('diff-display');
+  diffEl.innerHTML = hb.split('').map((c, i) => {
+    const diff = c !== ha[i];
+    if (diff) diffCount++;
+    return `<span style="color:${diff?'var(--red)':'var(--muted)'};font-weight:${diff?'bold':'normal'}">${c}</span>`;
+  }).join('');
+
+  const pct = Math.round((diffCount/64)*100);
+  document.getElementById('diff-stats').innerHTML = 
+    `<span style="color:var(--red)">${diffCount}</span> of 64 hex characters differ → <span style="color:var(--warn)">${pct}% change</span> in output from a single character difference in input`;
+}
+
+// ---- INIT ----
+updateCaesar();
+updateVigenere();
+updateRSA();
+updateHash();
+updateCompare();
+</script>
+</body>
+</html>
